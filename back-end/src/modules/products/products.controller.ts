@@ -80,18 +80,6 @@ export class ProductsController {
     async updateProduct(@UploadedFile() file: Express.Multer.File, @Body() data: any) {
         try {
 
-            const newFileName = `${Date.now()}-${file.originalname}`;
-            const filePath = path.join(__dirname, `../../../src/images/products/${newFileName}`);
-            fs.writeFileSync(filePath, file.buffer);
-
-            const fileToDeletePath = path.join(__dirname, `../../../src/images/products`, data.img_name);
-            console.log(fileToDeletePath)
-
-            if (fs.existsSync(fileToDeletePath)) {
-                fs.unlinkSync(fileToDeletePath);
-            }
-
-
             if (Object.values(data).some(value => value === '')) {
                 return {
                     message: 'All fields are required',
@@ -99,10 +87,23 @@ export class ProductsController {
                 };
             }
 
+            const newFileName = `${Date.now()}-${file.originalname}`;
+            const filePath = path.join(__dirname, `../../../src/images/products/${newFileName}`);
+            fs.writeFileSync(filePath, file.buffer);
+
+            const fileToDeletePath = path.join(__dirname, `../../../src/images/products`, data.img_name);
+
+            if (fs.existsSync(fileToDeletePath)) {
+                fs.unlinkSync(fileToDeletePath);
+            }
+
             data.image = `src/images/products/${newFileName}`;
             data.price = Number(data.price);
+            data.id = Number(data.id);
 
-            const result = await this.repo.updateProduct(data.id, data);
+            const { img_name, ...rest } = data;
+
+            const result = await this.repo.updateProduct(data.id, rest);
             return {
                 message: 'Product updated successfully',
                 data: result,
