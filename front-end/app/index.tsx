@@ -42,7 +42,7 @@ export default function HomeScreen() {
             placement: "top",
             animationDuration: 200,
             successColor: "#FF1E00",
-            
+
         });
     }
 
@@ -104,7 +104,7 @@ export default function HomeScreen() {
                                         showToast()
                                     }}
                                     className='w-10 h-10 items-center justify-center bg-[#FF1E00] rounded-full'>
-                                    <AntDesign name="shoppingcart" size={17} color={theme ? "#000" : "#fff"} />
+                                    <AntDesign name="shoppingcart" size={17} color={"#fff"} />
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.productLogoContainer}>

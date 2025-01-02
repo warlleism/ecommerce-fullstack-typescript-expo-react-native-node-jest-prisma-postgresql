@@ -15,16 +15,13 @@ model User {
   updatedAt DateTime @default(now())
 }
 
-model Job {
-  id           Int      @id @default(autoincrement())
-  title        String
-  description  String
-  enterprise   String
-  platform     String
-  technologies String
-  url          String
-  phone        String
-  address      String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+model Rapide {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String
+  enterprise  String
+  image       String
+  price       Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
