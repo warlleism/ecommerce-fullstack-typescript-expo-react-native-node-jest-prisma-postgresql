@@ -3,7 +3,6 @@ import { ProductsRepository } from './products.repository';
 import * as fs from 'fs';
 import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { Product } from './products.entity';
 
 @Controller('Product')
 export class ProductsController {
@@ -14,7 +13,7 @@ export class ProductsController {
     @UseInterceptors(FileInterceptor('image'))
     async createProduct(@UploadedFile() file: Express.Multer.File, @Body() data: any) {
         const folderPath = path.join(__dirname, '../../../src/images/products');
-
+        console.log(folderPath)
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
         }
