@@ -2,9 +2,9 @@ export default interface IProduct {
     description: string;
     enterprise?: string;
     id: number;
-    image?: string | any;
+    image: string | any;
     logo?: string | any;
     name: string;
-    price: number;
+    price: number | string;
     qtd?: number;
 }

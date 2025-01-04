@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { router } from 'expo-router';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Platform } from 'react-native';
@@ -12,6 +12,7 @@ import FavoriteButton from './components/favoriteButton';
 import { AntDesign } from '@expo/vector-icons';
 import useCartStore from './context/cart/cartProvider';
 import { useToast } from "react-native-toast-notifications";
+import axios from 'axios';
 const { width, height } = Dimensions.get("window");
 
 export default function HomeScreen() {
@@ -46,9 +47,19 @@ export default function HomeScreen() {
         });
     }
 
+    useEffect(() => {
+        async function fetchOProducts() {
+            const response = await axios.get("http://localhost:3000/Product/get");
+            console.log(response);
+        }
+
+        fetchOProducts();
+    }, []);
+
     if (!fontsLoaded) {
         return null;
     }
+
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: theme ? '#313131' : '#fff', }]}>
@@ -112,8 +123,9 @@ export default function HomeScreen() {
                             </View>
                             <Image style={styles.productImage} source={item.image} />
                             <View className='items-center w-[100%] '>
-                                <Text className={`w-[100%] text-center  font-medium text-[#323232]  text-[${theme ? '#fff' : '#313131'}]`}
+                                <Text className={`w-[100%] text-center  font-medium   text-[${theme ? '#fff' : '#313131'}]`}
                                     style={{
+                                        color: theme ? '#fff' : '#313131',
                                         fontSize: size as number,
                                         fontFamily: Platform.select({
                                             android: 'Bangers_400Regular',
