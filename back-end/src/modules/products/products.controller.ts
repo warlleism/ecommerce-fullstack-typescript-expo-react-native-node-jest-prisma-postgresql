@@ -54,6 +54,7 @@ export class ProductsController {
         try {
             const result = await this.repo.getProducts(1, 10);
             const baseUrl = "http://localhost:3000";
+            console.log(result)
             const updatedData = result.map(product => ({
                 ...product,
                 image: `${baseUrl}/${product.image.replace('src/', '')}`,
