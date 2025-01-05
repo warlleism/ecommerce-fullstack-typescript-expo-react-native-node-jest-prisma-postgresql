@@ -12,7 +12,7 @@ export class ProductsController {
     @UseInterceptors(FileInterceptor('image'))
     async createProduct(@UploadedFile() file: Express.Multer.File, @Body() data: any) {
         const folderPath = path.join(__dirname, '../../../src/images/products');
-        
+
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
         }
@@ -27,7 +27,8 @@ export class ProductsController {
         try {
             const newFileName = `${Date.now()}-${file.originalname}`;
             const filePath = path.join(folderPath, newFileName);
-            fs.writeFileSync(filePath, file.buffer);
+            await fs.promises.mkdir(path.dirname(filePath), { recursive: true });
+            await fs.promises.writeFile(filePath, file.buffer);
 
             data.image = `src/images/products/${newFileName}`;
             data.price = Number(data.price);
@@ -52,11 +53,11 @@ export class ProductsController {
     async getProducts() {
         try {
             const result = await this.repo.getProducts(1, 10);
-            const baseUrl = "https://back-end-ashen-three.vercel.app";
+            const baseUrl = "http://localhost:3000";
             const updatedData = result.map(product => ({
                 ...product,
                 image: `${baseUrl}/${product.image.replace('src/', '')}`,
-                img_name: product.image.replace('https://back-end-ashen-three.vercel.app/images/products/', '')
+                img_name: product.image.replace('http://localhost:3000/images/products/', '')
             }))
             return {
                 message: 'Products fetched successfully',
