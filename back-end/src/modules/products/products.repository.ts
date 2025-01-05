@@ -7,29 +7,29 @@ export class ProductsRepository {
     constructor(private prisma: PrismaService) { }
 
     async createProduct(data: Product) {
-        const result = await this.prisma.rapide.create({ data } as never);
+        const result = await this.prisma.rapideProducts.create({ data } as never);
         return result;
     };
 
     async getProducts(page: number, pageSize: number) {
         const skip = (page - 1) * pageSize;
         const take = pageSize
-        const result = await this.prisma.rapide.findMany({ skip, take });
+        const result = await this.prisma.rapideProducts.findMany({ skip, take });
         return result;
     };
 
-    async getOneProduct(id: number) {
-        const result = await this.prisma.rapide.findUnique({ where: { id } });
+    async getOneProduct(productid: number) {
+        const result = await this.prisma.rapideProducts.findUnique({ where: { productid } });
         return result;
     };
 
-    async deleteProduct(id: number) {
-        const result = await this.prisma.rapide.delete({ where: { id } });
+    async deleteProduct(productid: number) {
+        const result = await this.prisma.rapideProducts.delete({ where: { productid } });
         return result;
     };
 
-    async updateProduct(id: number, data: Product) {
-        const result = await this.prisma.rapide.update({ where: { id }, data });
+    async updateProduct(productid: number, data: Product) {
+        const result = await this.prisma.rapideProducts.update({ where: { productid }, data });
         return result;
     };
 }

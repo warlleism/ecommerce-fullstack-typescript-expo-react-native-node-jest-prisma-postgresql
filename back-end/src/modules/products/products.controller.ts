@@ -8,12 +8,12 @@ import { FileInterceptor } from '@nestjs/platform-express';
 export class ProductsController {
     constructor(private repo: ProductsRepository) { }
 
-
     @Post('create')
     @UseInterceptors(FileInterceptor('image'))
     async createProduct(@UploadedFile() file: Express.Multer.File, @Body() data: any) {
+        // const folderPath = '/tmp/products';
         const folderPath = path.join(__dirname, '../../../src/images/products');
-        console.log(folderPath)
+
         if (!fs.existsSync(folderPath)) {
             fs.mkdirSync(folderPath, { recursive: true });
         }
@@ -21,7 +21,7 @@ export class ProductsController {
         if (Object.values(data).some(value => value === '')) {
             return {
                 message: 'All fields are required',
-                status: HttpStatus.BAD_REQUEST
+                status: HttpStatus.BAD_REQUEST,
             };
         }
 
@@ -30,7 +30,7 @@ export class ProductsController {
             const filePath = path.join(folderPath, newFileName);
             fs.writeFileSync(filePath, file.buffer);
 
-            data.image = `src/images/products/${newFileName}`;
+            data.image = filePath;
             data.price = Number(data.price);
 
             const result = await this.repo.createProduct(data);
@@ -38,13 +38,13 @@ export class ProductsController {
             return {
                 message: 'Product created successfully',
                 data: result,
-                status: HttpStatus.OK
+                status: HttpStatus.OK,
             };
         } catch (error) {
             return {
                 message: 'Error creating Product',
                 error: error.message,
-                status: HttpStatus.BAD_REQUEST
+                status: HttpStatus.BAD_REQUEST,
             };
         }
     }
@@ -53,26 +53,33 @@ export class ProductsController {
     async getProducts() {
         try {
             const result = await this.repo.getProducts(1, 10);
-            const baseUrl = "http://localhost:3000";
-            const updatedData = result.map(product => ({
-                ...product,
-                image: `${baseUrl}/${product.image.replace('src/', '')}`,
-                img_name: product.image.replace('http://localhost:3000/images/products/', '')
-            }))
+
+            const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+            const updatedData = result.map(product => {
+                const imagePath = product.image?.replace('src/', '');
+                const imageUrl = imagePath ? `${baseUrl}/${imagePath}` : null;
+
+                return {
+                    ...product,
+                    image: imageUrl,
+                    img_name: imagePath?.split('/').pop() || '',
+                };
+            });
+
             return {
                 message: 'Products fetched successfully',
                 data: updatedData,
-                status: HttpStatus.OK
-            }
+                status: HttpStatus.OK,
+            };
         } catch (error) {
             return {
                 message: 'Error getting Products',
                 error: error.message,
-                status: HttpStatus.BAD_REQUEST
-
+                status: HttpStatus.BAD_REQUEST,
             };
         }
-    };
+    }
 
     @Patch('update')
     @UseInterceptors(FileInterceptor('image'))
@@ -117,7 +124,7 @@ export class ProductsController {
         }
     };
 
-    @Get('get/id')
+    @Get('getOne')
     async getOneProduct(@Query('id') id: number) {
         try {
             const result = await this.repo.getOneProduct(id);
