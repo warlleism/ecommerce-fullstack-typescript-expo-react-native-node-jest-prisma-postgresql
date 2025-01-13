@@ -1,10 +1,10 @@
 import useConfigStore from "@/app/context/config/Provider";
 import useListProduct from "@/app/context/listProvider/listProvider";
+import useGetProducts from "@/app/hooks/useGetProducts";
 import IProduct from "@/app/interfaces/product";
-import recommended from "@/assets/data/allProducts/data";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
-import { Image, Platform, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import { FlatList, Image, Platform, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 
 export default function Recommended() {
 
@@ -16,30 +16,31 @@ export default function Recommended() {
         router.push('screens/ProductDetail' as never);
     }
 
+    const { data, loading, error } = useGetProducts()
+
     return (
         <View>
             <View style={styles.containeFavTitle}>
                 <Text style={[styles.title, { color: theme ? '#fff' : '#000' }]}>Recomendados</Text>
             </View>
-            <FlashList
-                data={recommended}
+            <FlatList
+                data={data}
                 extraData={theme}
-                renderItem={({ item }) => (
+                renderItem={({ item }: any) => (
                     <TouchableOpacity onPress={() => handleProduct(item)} style={[styles.cart, { backgroundColor: theme ? '#282828' : '#F9F9F9' }]}>
                         <View style={{
                             width: "100%", height: "50%", backgroundColor: theme ? '#313131' : '#fff', justifyContent: "center", alignItems: "center",
                             borderTopEndRadius: 10, borderTopStartRadius: 10, overflow: "hidden"
                         }}>
-                            <Image source={item.image} style={{ width: "70%", height: "70%", resizeMode: "contain", borderRadius: 10, }} />
+                            <Image source={{ uri: item.img }} style={{ width: "70%", height: "70%", resizeMode: "contain", borderRadius: 10, }} />
                         </View>
                         <View style={{ padding: 10 }}>
-                            <Text style={[styles.text, { color: theme ? '#fff' : '#313131' }]}>{item.name}</Text>
+                            <Text style={[styles.text, { color: theme ? '#fff' : '#313131' }]}>{item.title}</Text>
                         </View>
                     </TouchableOpacity>
                 )}
                 horizontal
                 keyExtractor={(item, index) => index.toString()}
-                estimatedItemSize={100}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.flashMoreContent}
             />

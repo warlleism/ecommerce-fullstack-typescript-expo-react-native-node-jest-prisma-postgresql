@@ -39,7 +39,7 @@ export default function CartScreen() {
         }, 4000)
     }
 
-    if (!fontsLoaded) {
+    if (!fontsLoaded || !cart) {
         return null;
     }
 
@@ -52,7 +52,11 @@ export default function CartScreen() {
                         <Recommended />
                         <View style={styles.containeFavTitle}>
                             <Text style={[styles.title, { color: theme ? '#fff' : '#000' }]}>Carrinho</Text>
-                            <TouchableOpacity onPress={() => clearAllCart()} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
+                            <TouchableOpacity onPress={() => {
+                                if (cart.length > 0) {
+                                    clearAllCart()
+                                }
+                            }} style={{ flexDirection: "row", alignItems: "center", gap: 5 }}>
                                 <Entypo name="trash" size={15} color={"#FF1E00"} style={{ marginTop: 5 }} />
                                 <Text style={{ color: "#FF1E00", fontFamily: 'Bangers_400Regular', fontSize: size as number }}>Limpar</Text>
                             </TouchableOpacity>
@@ -61,7 +65,7 @@ export default function CartScreen() {
                             data={cart}
                             extraData={theme}
                             contentContainerStyle={{ paddingBottom: height * 0.2 }}
-                            renderItem={({ item, index }) => (
+                            renderItem={({ item }) => (
                                 <View style={
                                     {
                                         marginBottom: 10,
@@ -77,9 +81,9 @@ export default function CartScreen() {
                                     }
                                 }>
                                     <View style={{ width: "70%", flexDirection: 'row', alignItems: 'center' }}>
-                                        <Image source={item.image} style={{ width: 80, height: 100, objectFit: "contain" }} />
+                                        <Image source={{ uri: item.img }} style={{ width: 80, height: 100, objectFit: "contain" }} />
                                         <View style={{ flex: 1, marginLeft: 10, width: "45%" }}>
-                                            <Text style={{ width: "100%", color: theme ? '#fff' : '#000' }}>{item.name}</Text>
+                                            <Text style={{ width: "100%", color: theme ? '#fff' : '#000' }}>{item.title}</Text>
                                             <Text style={{ width: "100%", color: "#FF1E00", fontWeight: "600" }}>{currency == "USD" ? `$${item.price}` : `R$${(Number(item.price) * 6).toFixed(2)}`}</Text>
                                         </View>
                                     </View>

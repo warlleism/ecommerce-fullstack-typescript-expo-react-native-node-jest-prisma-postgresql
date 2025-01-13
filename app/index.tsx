@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { router } from 'expo-router';
 import { Dimensions, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Platform } from 'react-native';
-import HomeProducts from '@/assets/data/home-products/data';
 import IProduct from './interfaces/product';
 import useListProduct from './context/listProvider/listProvider';
 import useConfigStore from './context/config/Provider';
@@ -13,6 +12,7 @@ import { AntDesign } from '@expo/vector-icons';
 import useCartStore from './context/cart/cartProvider';
 import { useToast } from "react-native-toast-notifications";
 import axios from 'axios';
+import useGetProducts from './hooks/useGetProducts';
 const { width, height } = Dimensions.get("window");
 
 export default function HomeScreen() {
@@ -21,6 +21,7 @@ export default function HomeScreen() {
         Bangers_400Regular
     });
 
+    const { data } = useGetProducts()
     const { listProduct, addFavorite, favorites } = useListProduct();
     const { size, theme } = useConfigStore();
     const { addProduct } = useCartStore();
@@ -59,7 +60,6 @@ export default function HomeScreen() {
     if (!fontsLoaded) {
         return null;
     }
-
 
     return (
         <ScrollView style={[styles.container, { backgroundColor: theme ? '#313131' : '#fff', }]}>
@@ -100,7 +100,7 @@ export default function HomeScreen() {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.productList}>
-                    {HomeProducts.map((item: IProduct, index) => (
+                    {data.map((item: IProduct, index) => (
                         <TouchableOpacity
                             key={index}
                             style={[styles.productItem, { backgroundColor: theme ? '#313131' : '#fff' }]}
@@ -118,10 +118,11 @@ export default function HomeScreen() {
                                     <AntDesign name="shoppingcart" size={17} color={"#fff"} />
                                 </TouchableOpacity>
                             </View>
-                            <View style={styles.productLogoContainer}>
+                            {/* <View style={styles.productLogoContainer}>
                                 <Image style={styles.productLogo} source={item.logo} />
-                            </View>
-                            <Image style={styles.productImage} source={item.image} />
+                            </View> */}
+
+                            <Image style={styles.productImage} source={{ uri: item.img }} />
                             <View className='items-center w-[100%] '>
                                 <Text className={`w-[100%] text-center  font-medium   text-[${theme ? '#fff' : '#313131'}]`}
                                     style={{
@@ -132,7 +133,7 @@ export default function HomeScreen() {
                                             ios: 'Bangers_400Regular',
                                         }),
                                     }}
-                                >{item.name}
+                                >{item.title}
                                 </Text>
                             </View>
                         </TouchableOpacity>

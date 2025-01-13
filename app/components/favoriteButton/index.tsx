@@ -1,5 +1,4 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
 import IProduct from '@/app/interfaces/product';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -17,7 +16,7 @@ export default function FavoriteButton({
     size?: number;
 }) {
 
-    const isFavorite = favorites?.some((favorite: IProduct) => favorite.name === product.name);
+    const isFavorite = favorites?.some((favorite: IProduct) => favorite.title === product.title);
 
     return (
         <Ionicons

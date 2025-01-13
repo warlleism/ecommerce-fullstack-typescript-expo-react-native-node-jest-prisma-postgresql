@@ -1,8 +1,8 @@
-import { Button, Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Dimensions, Image, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import useCartStore from "../../context/cart/cartProvider";
 import BackButton from "../../components/backButton";
 import { FlashList } from "@shopify/flash-list";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import useConfigStore from "@/app/context/config/Provider";
 import LottieView from "lottie-react-native";
@@ -13,7 +13,7 @@ const { height } = Dimensions.get("window");
 
 export default function CheckoutScreen() {
     const { cart, price, lessQtd, moreQtd, removeProduct, calcProducts, clearAllCart } = useCartStore();
-    const { theme, currency, size } = useConfigStore();
+    const { theme, currency } = useConfigStore();
     const [loading, setLoading] = useState(false);
     const [spinner, setSpinner] = useState(false);
 
@@ -37,6 +37,7 @@ export default function CheckoutScreen() {
             setLoading(false);
             setSpinner(false);
             router.push('/' as never);
+            clearAllCart();
         }, 4000)
     }
 
@@ -66,10 +67,10 @@ export default function CheckoutScreen() {
                         }}>
                         <View style={{ width: "70%", flexDirection: 'row', alignItems: 'center', }}>
                             <View>
-                                <Image source={item.image} style={{ width: 60, height: 80, objectFit: "contain" }} />
+                                <Image source={{ uri: item.img }} style={{ width: 60, height: 80, objectFit: "contain" }} />
                             </View>
                             <View style={{ flex: 1, marginLeft: 10, width: "45%" }}>
-                                <Text style={{ width: "100%", color: theme ? '#fff' : '#000' }}>{item.name}</Text>
+                                <Text style={{ width: "100%", color: theme ? '#fff' : '#000' }}>{item.title}</Text>
                                 <Text style={{ width: "100%", color: "#FF1E00", fontWeight: "600" }}>{currency == "USD" ? `$${item.price}` : `R$${(Number(item.price) * 6).toFixed(2)}`}</Text>
                             </View>
                         </View>

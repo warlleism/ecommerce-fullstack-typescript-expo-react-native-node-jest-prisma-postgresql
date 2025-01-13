@@ -16,11 +16,11 @@ const useCartStore = create<CounterState>((set) => ({
     cart: null,
     price: 0,
     addProduct: (data: IProduct) => set((state) => ({
-        cart: state.cart?.find((item) => item.name === data.name) ? state.cart : state.cart ? [...state.cart, data] : [data]
+        cart: state.cart?.find((item) => item.title === data.title) ? state.cart : state.cart ? [...state.cart, data] : [data]
     })),
 
     removeProduct: (data: IProduct) => set((state) => {
-        const filteredCart = state.cart ? state.cart.filter((item: IProduct) => item.name !== data.name) : [];
+        const filteredCart = state.cart ? state.cart.filter((item: IProduct) => item.title !== data.title) : [];
         return { cart: filteredCart };
     }),
 
@@ -51,14 +51,14 @@ const useCartStore = create<CounterState>((set) => ({
     calcProducts: () => set((state) => {
         const totalValue = state.cart ? state.cart.reduce((accumulator, currentValue: IProduct) => {
             const qtd = currentValue.qtd || 0;
-            const price = parseFloat(currentValue.price) || 0;
+            const price = parseFloat(currentValue.price as string) || 0;
 
             return accumulator + (qtd * price);
         }, 0) : 0;
         return { price: totalValue };
     }),
 
-    clearAllCart: () => set(() => ({ cart: null, price: 0 }))
+    clearAllCart: () => set(() => ({ cart: [], price: 0 }))
 
 }));
 

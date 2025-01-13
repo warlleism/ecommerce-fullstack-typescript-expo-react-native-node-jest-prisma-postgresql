@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { FlashList } from "@shopify/flash-list";
-import Products from "@/assets/data/products/data";
-import { Dimensions, ScrollView, StyleSheet, Text, View, Image, Platform, TouchableOpacity, TextInput, ViewStyle } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, Text, View, Image, Platform, TouchableOpacity, TextInput, ViewStyle, FlatList, RefreshControl } from "react-native";
 import { useRouter, useLocalSearchParams, usePathname } from "expo-router";
 import BackButton from "@/app/components/backButton";
 import IProduct from "@/app/interfaces/product";
@@ -10,6 +8,9 @@ import useConfigStore from "@/app/context/config/Provider";
 import { AntDesign } from "@expo/vector-icons";
 import SkeletonListProducts from "@/app/components/skeleton/skeleton";
 import { Bangers_400Regular, useFonts } from "@expo-google-fonts/bangers";
+import useGetProductsEnterprise from "@/app/hooks/useGetProductsEnterprise";
+import RecommendedSkeletonListProducts from "@/app/components/skeleton/recommended_skeleton";
+import useGetRecommendedProducts from "@/app/hooks/useGetRecommendedProducts";
 const { height } = Dimensions.get("window");
 type ProductType = 'mcdonalds' | 'kfc' | 'burger_king' | 'bobs';
 
@@ -18,36 +19,29 @@ export default function ProductsDetailAllScreen() {
     const pathname = usePathname();
     const router = useRouter();
     const { currency, theme } = useConfigStore();
-    const [mcDonaldsMoreRequestData, setMcdonaldsMoreRequestData] = useState<any[]>([]);
+    const [refreshing, setRefreshing] = useState(false);
+    const { data: recommendedProducts } = useGetRecommendedProducts({ refreshing: refreshing })
     const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
     const [isEmpty, setIsEmpty] = useState(false);
     const [text, setText] = useState('');
-    const [mcDonaldsList, setMcDonaldsList] = useState<any[]>([]);
     const { producttype } = useLocalSearchParams();
     const { listProduct } = useListProduct();
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-    const [spinner, setSpinner] = useState(false);
-    const [fontsLoaded] = useFonts({
-        Bangers_400Regular
-    });
-
-    useEffect(() => {
-        const getData = () => {
-            if (producttype) {
-                const productArray = Products.map((item) => item[producttype as ProductType]);
-                const productList = productArray.map((item) => item);
-                setMcdonaldsMoreRequestData(productList[0].more_requests);
-                setMcDonaldsList(productList[0].list_products)
-            }
-        };
-        getData();
-    }, [producttype]);
+    const [fontsLoaded] = useFonts({ Bangers_400Regular });
+    const { data: products, loading } = useGetProductsEnterprise({ enterprise: producttype });
 
     useEffect(() => {
         setText('')
         setFilteredProducts([])
         setIsEmpty(false)
     }, [pathname])
+
+    const onRefresh = () => {
+        setRefreshing(true);
+        setTimeout(() => {
+            setRefreshing(false);
+        }, 2000);
+    };
 
     function handleProduct(data: IProduct) {
         listProduct(data);
@@ -56,17 +50,15 @@ export default function ProductsDetailAllScreen() {
 
     function inputHandleChange(text: string) {
         setText(text);
-        setSpinner(true);
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
         }
 
         timeoutRef.current = setTimeout(() => {
-            const filteredProduct = mcDonaldsList.filter((item) => item.name.toLowerCase().includes(text.toLowerCase()));
+            const filteredProduct = products.filter((item: any) => item.title.toLowerCase().includes(text.toLowerCase()));
             const isEmpty = text && filteredProduct.length === 0 ? setIsEmpty(true) : setIsEmpty(false);
             setFilteredProducts(filteredProduct);
-            setSpinner(false);
         }, 1000);
     }
 
@@ -76,17 +68,26 @@ export default function ProductsDetailAllScreen() {
         setIsEmpty(false)
     }
 
-    const data = filteredProducts.length > 0 ? filteredProducts : mcDonaldsList;
+    const data = filteredProducts.length > 0 ? filteredProducts : products;
 
     if (!fontsLoaded) {
         return null;
     }
 
+
     return (
         <View style={{ backgroundColor: theme ? '#313131' : '#fff', height: height }}>
             <BackButton />
             <View>
-                <ScrollView>
+                <ScrollView
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={onRefresh}
+                            colors={["#FF8000"]}
+                            tintColor="#FF8000"
+                        />
+                    }       >
                     <View style={{ height: 50, width: "100%", paddingHorizontal: 10, borderRadius: 10, overflow: "hidden", marginBottom: 20 }}>
                         <View style={{
                             position: "relative",
@@ -125,6 +126,7 @@ export default function ProductsDetailAllScreen() {
                             }
                         </View>
                     </View>
+
                     <View style={{ paddingLeft: 20, justifyContent: "center", marginBottom: 20 }}>
                         <Text style={{
                             fontSize: 30,
@@ -134,31 +136,39 @@ export default function ProductsDetailAllScreen() {
                                 android: 'Bangers_400Regular',
                                 ios: 'Bangers_400Regular',
                             }),
-                        }}>Mais pedidos</Text>
-                        <FlashList
-                            data={mcDonaldsMoreRequestData}
-                            extraData={theme}
-                            renderItem={({ item }) => (
-                                <TouchableOpacity onPress={() => handleProduct(item)} style={[styles.cart, { backgroundColor: theme ? '#282828' : '#F9F9F9' }]}>
-                                    <View style={{
-                                        width: "100%", height: "50%", backgroundColor: theme ? '#313131' : '#fff', justifyContent: "center", alignItems: "center",
-                                        borderTopEndRadius: 10, borderTopStartRadius: 10, overflow: "hidden"
-                                    }}>
-                                        <Image source={item.image} style={{ width: "70%", height: "70%", resizeMode: "contain", borderRadius: 10, }} />
-                                    </View>
-                                    <View style={{ padding: 10 }}>
-                                        <Text style={[styles.text, { color: theme ? '#fff' : '#313131' }]}>{item.name}</Text>
-                                        <Text style={[styles.text, { fontSize: 15, color: "#FF8000", textAlign: "center" }]}>{currency == "USD" ? `$ ${item.price} ` : `R$ ${(Number(item.price) * 6).toFixed(2)}`}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                            )}
-                            horizontal
-                            keyExtractor={(item, index) => index.toString()}
-                            estimatedItemSize={100}
-                            showsHorizontalScrollIndicator={false}
-                            contentContainerStyle={styles.flashMoreContent}
-                        />
+                        }}>Recomendados</Text>
+                        {
+                            !loading && !refreshing ? (
+                                <FlatList
+                                    data={recommendedProducts}
+                                    extraData={loading}
+                                    renderItem={({ item }: any) => (
+                                        <TouchableOpacity onPress={() => handleProduct(item)} style={[styles.cart, { backgroundColor: theme ? '#282828' : '#F9F9F9' }]}>
+                                            <View style={{
+                                                width: "100%", height: "50%", backgroundColor: theme ? '#313131' : '#fff', justifyContent: "center", alignItems: "center",
+                                                borderTopEndRadius: 10, borderTopStartRadius: 10, overflow: "hidden"
+                                            }}>
+                                                <Image source={{ uri: item.img }} style={{ width: "70%", height: "70%", resizeMode: "contain", borderRadius: 10, }} />
+                                            </View>
+                                            <View style={{ padding: 10 }}>
+                                                <Text style={[styles.text, { color: theme ? '#fff' : '#313131' }]}>{item.title}</Text>
+                                                <Text style={[styles.text, { fontSize: 15, color: "#FF8000", textAlign: "center" }]}>{currency == "USD" ? `$ ${item.price} ` : `R$ ${(Number(item.price) * 6).toFixed(2)}`}</Text>
+                                            </View>
+                                        </TouchableOpacity>
+                                    )}
+                                    horizontal
+                                    keyExtractor={(item, index) => index.toString()}
+                                    showsHorizontalScrollIndicator={false}
+                                    contentContainerStyle={styles.flashMoreContent}
+                                />
+                            )
+                                :
+                                (
+                                    <RecommendedSkeletonListProducts theme={theme} />
+                                )
+                        }
                     </View>
+
                     <View style={{ marginBottom: height / 6 }}>
                         <Text style={{
                             marginLeft: 20,
@@ -172,24 +182,28 @@ export default function ProductsDetailAllScreen() {
                         }}>Cardápio</Text>
                         <View style={styles.flashListContent}>
                             {
-                                spinner ?
+                                refreshing ? (
                                     <SkeletonListProducts theme={theme} />
+                                )
                                     :
                                     isEmpty === false ? data.map((item, index) => (
-                                        <TouchableOpacity onPress={() => handleProduct(item)} style={[styles.cartList,
-                                        { backgroundColor: theme ? '#282828' : '#F9F9F9', width: data.length == 1 ? "100%" : "49%" }]} key={index}>
-                                            <View style={{
-                                                width: "100%", height: "50%", backgroundColor: theme ? '#313131' : '#fff', justifyContent: "center", alignItems: "center",
-                                                borderTopEndRadius: 10, borderTopStartRadius: 10,
-                                                overflow: "hidden"
-                                            }}>
-                                                <Image source={item.image} style={{ width: "70%", height: "70%", resizeMode: "contain", borderRadius: 10, }} />
-                                            </View>
-                                            <View style={{ padding: 10 }}>
-                                                <Text style={[styles.text, { color: theme ? '#fff' : '#313131' }]}>{item.name}</Text>
-                                                <Text style={[styles.text, { fontSize: 16, color: "#FF8000", textAlign: "center" }]}>{currency == "USD" ? `$ ${item.price} ` : `R$ ${(Number(item.price) * 6).toFixed(2)}`}</Text>
-                                            </View>
-                                        </TouchableOpacity>
+                                        !loading ?
+                                            <TouchableOpacity onPress={() => handleProduct(item)} style={[styles.cartList,
+                                            { backgroundColor: theme ? '#282828' : '#F9F9F9', width: data.length == 1 ? "100%" : "49%" }]} key={index}>
+                                                <View style={{
+                                                    width: "100%", height: "50%", backgroundColor: theme ? '#313131' : '#fff', justifyContent: "center", alignItems: "center",
+                                                    borderTopEndRadius: 10, borderTopStartRadius: 10,
+                                                    overflow: "hidden"
+                                                }}>
+                                                    <Image source={{ uri: item.img }} style={{ width: "70%", height: "70%", resizeMode: "contain", borderRadius: 10, }} />
+                                                </View>
+                                                <View style={{ padding: 10 }}>
+                                                    <Text style={[styles.text, { color: theme ? '#fff' : '#313131' }]}>{item.title}</Text>
+                                                    <Text style={[styles.text, { fontSize: 16, color: "#FF8000", textAlign: "center" }]}>{currency == "USD" ? `$ ${item.price} ` : `R$ ${(Number(item.price) * 6).toFixed(2)}`}</Text>
+                                                </View>
+                                            </TouchableOpacity>
+                                            :
+                                            <SkeletonListProducts key={index} theme={theme} />
                                     ))
                                         :
                                         <View style={{ width: "100%", height: height / 3, justifyContent: "center", alignItems: "center" }}>
@@ -245,11 +259,4 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
     },
-    spinner: {
-        width: "49%",
-        height: 200,
-        borderRadius: 10,
-        backgroundColor: "#F9F9F9",
-        marginBottom: 10
-    }
 });

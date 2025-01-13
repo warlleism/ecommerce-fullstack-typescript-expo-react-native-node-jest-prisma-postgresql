@@ -36,13 +36,13 @@ const useListProduct = create<CounterState>((set) => ({
     listProduct: (data: any) => set({ product: data }),
     listFavorites: (data: any) => set({ favorites: data }),
     addFavorite: (data: IProduct) => set((state) => {
-        const productExist = state?.favorites?.find((item) => item.name === data.name)
-        const updatedFavorites = productExist ? state.favorites?.filter((item: IProduct) => item.name !== data.name) : [...(state.favorites || []), data];
+        const productExist = state?.favorites?.find((item) => item.title === data.title)
+        const updatedFavorites = productExist ? state.favorites?.filter((item: IProduct) => item.title !== data.title) : [...(state.favorites || []), data];
         storeData('favorites', updatedFavorites);
         return { favorites: updatedFavorites };
     }),
     removeFavorite: (data: IProduct) => set((state) => {
-        const updatedFavorites = state.favorites ? state.favorites.filter((item: IProduct) => item.name !== data.name) : [];
+        const updatedFavorites = state.favorites ? state.favorites.filter((item: IProduct) => item.title !== data.title) : [];
         storeData('favorites', updatedFavorites);
         return { favorites: updatedFavorites };
     }),

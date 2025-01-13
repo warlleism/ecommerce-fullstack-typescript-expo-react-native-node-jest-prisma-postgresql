@@ -34,12 +34,12 @@ export default function ProductDetailScreen() {
             <BackButton />
             <View style={{ width: "100%", paddingHorizontal: 20, }}>
                 <View style={styles.imageContainer}>
-                    <Image source={product.logo} style={styles.logo} />
-                    <Image source={product.image} style={styles.productImage} />
+                    {/* <Image source={product.logo} style={styles.logo} /> */}
+                    <Image source={{ uri: product.img }} style={styles.productImage} />
                 </View>
                 <View style={{ paddingVertical: 10, width: "100%" }}>
                     <View style={{ flexDirection: "row", justifyContent: "space-between", width: "100%" }}>
-                        <Text style={[styles.productName, { color: theme ? '#fff' : '#000' }]}>{product.name}</Text>
+                        <Text style={[styles.productName, { color: theme ? '#fff' : '#000' }]}>{product.title}</Text>
                         <FavoriteButton favorites={favorites} product={product} addFavorite={addFavorite} theme={theme} />
                     </View>
                     <Image source={product.logo} style={styles.logointer} />

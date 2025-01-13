@@ -1,26 +1,16 @@
 import React, { useEffect } from 'react';
-import {
-    Image,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
-import { usePathname, useRouter } from 'expo-router';
+import { Image, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { FlashList } from '@shopify/flash-list';
 import useListProduct from '@/app/context/listProvider/listProvider';
 import useConfigStore from '@/app/context/config/Provider';
 import IProduct from '@/app/interfaces/product';
 import BackButton from '@/app/components/backButton';
-import Fontisto from '@expo/vector-icons/Fontisto';
 import { Bangers_400Regular, useFonts } from '@expo-google-fonts/bangers';
 import LottieView from 'lottie-react-native';
 
 
 export default function FavoriteScreen() {
-    const pathname = usePathname();
 
     const router = useRouter();
     const { size, theme, currency } = useConfigStore();
@@ -45,8 +35,8 @@ export default function FavoriteScreen() {
             backgroundColor: theme ? '#323232' : "#fff",
         }]}>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                <Image source={item.image} style={styles.image} />
-                <Text style={[styles.name, { width: 100, textAlign: "center", fontFamily: 'Bangers_400Regular', fontSize: size as number, color: theme ? '#fff' : '#000' }]}>{item.name}</Text>
+                <Image source={{ uri: item.img }} style={styles.image} />
+                <Text style={[styles.name, { width: 100, textAlign: "center", fontFamily: 'Bangers_400Regular', fontSize: size as number, color: theme ? '#fff' : '#000' }]}>{item.title}</Text>
             </View>
             <Image source={item.logo} style={styles.logo} />
             <View style={{ justifyContent: "center", alignItems: "center" }}>
